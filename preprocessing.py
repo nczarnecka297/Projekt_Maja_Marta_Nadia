@@ -67,3 +67,22 @@ def segmentation(frame, use_canny=True, threshold1=100, threshold2=200):
         # Binaryzacja obrazu
         _, binary = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
         return binary
+
+
+def pca_to_frame(frame, n_components=50):
+
+    """Stosuje PCA do pojedynczej ramki w celu redukcji wymiarowości i ekstrakcji cech.
+
+    :param frame: Ramka wideo do przetworzenia.
+    :type frame: numpy.ndarray
+    :param n_components: Liczba głównych składowych do zachowania.
+    :type n_components: int
+    :return: Ramka po redukcji wymiarowości.
+    :rtype: numpy.ndarray
+    """
+
+    flat_frame = frame.flatten().reshape(1, -1)
+    pca = PCA(n_components=n_components)
+    pca_frame = pca.fit_transform(flat_frame)
+
+    return pca_frame
