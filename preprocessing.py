@@ -1,4 +1,8 @@
 #funkcje na wstepne przetworzenie obrazu
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.svm import SVC
 import cv2
 import numpy as np
 import json
@@ -107,3 +111,11 @@ for entry in wlasl_data:
 
 features = np.array(features)
 labels = np.array(labels)
+
+X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
+
+# Define the machine learning pipeline
+pipeline = make_pipeline(StandardScaler(), PCA(n_components=0.95), SVC(kernel='rbf', class_weight='balanced'))
+
+# Train the model
+pipeline.fit(X_train, y_train)
