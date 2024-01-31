@@ -66,7 +66,7 @@ def preprocessing(video_path, bbox, frame_start, frame_end):
     cap.release()
     return processed_frames
 
-def extract_features(processed_frames, pixels_per_cell=(8, :), cells_per_block=(2, 2), orientations=9):
+def extract_features(processed_frames, pixels_per_cell=(8, 8), cells_per_block=(2, 2), orientations=9):
     video_features = []
 
     for frame in processed_frames:
@@ -84,3 +84,26 @@ def extract_features(processed_frames, pixels_per_cell=(8, :), cells_per_block=(
     video_features = np.concatenate(video_features, axis=0)
 
     return video_features
+
+features = []
+labels = []
+
+for entry in wlasl_data:
+    gloss = entry['gloss']
+    for instance in entry['instances']:
+        video_id = instance['video_id']
+        bbox = instance['bbox']
+        frame_start = instance['frame_start']
+        frame_end = instance['frame_end']
+        video_path = os.path.join(data_folder, f"{video_id}.mp4")
+
+        if os.path.exists(video_path):
+            processed_frames = process_video(video_path, bbox, frame_start, frame_end)
+            video_features = extract_features(processed_frames)
+            features.append(video_features)
+            labels.append(gloss)
+        else:
+            print(f"Video {video_id} for gloss {gloss} not found in the data folder.")
+
+features = np.array(features)
+labels = np.array(labels)
