@@ -3,6 +3,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
+from joblib import dump
 import cv2
 import numpy as np
 import json
@@ -119,6 +120,8 @@ pipeline = make_pipeline(StandardScaler(), PCA(n_components=0.95), SVC(kernel='r
 
 # Train the model
 pipeline.fit(X_train, y_train)
+
+dump(pipeline, 'sign_language_classifier.joblib')
 
 print(f"Training Accuracy: {pipeline.score(X_train, y_train)}")
 print(f"Testing Accuracy: {pipeline.score(X_test, y_test)}")
