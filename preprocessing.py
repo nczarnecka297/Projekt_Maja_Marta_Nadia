@@ -65,7 +65,7 @@ def preprocessing(video_path, bbox, frame_start, frame_end):
     cap.release()
     return processed_frames
 
-def extract_features(processed_frames, pixels_per_cell=(8, 😎, cells_per_block=(2, 2), orientations=9):
+def extract_features(processed_frames, pixels_per_cell=(8, :), cells_per_block=(2, 2), orientations=9):
     video_features = []
 
     for frame in processed_frames:
