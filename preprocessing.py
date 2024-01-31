@@ -4,6 +4,7 @@ import numpy as np
 import json
 import os
 from skimage.feature import hog
+from skimage import exposure
 
 data_folder = os.getcwd()
 nslt_json_path = os.path.join(data_folder, 'nslt_100.json')
