@@ -119,3 +119,6 @@ pipeline = make_pipeline(StandardScaler(), PCA(n_components=0.95), SVC(kernel='r
 
 # Train the model
 pipeline.fit(X_train, y_train)
+
+print(f"Training Accuracy: {pipeline.score(X_train, y_train)}")
+print(f"Testing Accuracy: {pipeline.score(X_test, y_test)}")
