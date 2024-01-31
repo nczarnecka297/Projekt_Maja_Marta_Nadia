@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import json
 import os
+from skimage.feature import hog
 
 data_folder = os.getcwd()
 nslt_json_path = os.path.join(data_folder, 'nslt_100.json')
@@ -58,7 +59,27 @@ def preprocessing(video_path, bbox, frame_start, frame_end):
         roi_filtered = cv2.medianBlur(clahe filtered, 5)
         roi_filtered = cv2.GaussianBlur(roi_filtered, (5, 5), 0)
         edged = cv2.Canny(roi_filtered, 100, 200)
+
         processed_frames.append(edged)
 
     cap.release()
     return processed_frames
+
+def extract_features(processed_frames, pixels_per_cell=(8, 😎, cells_per_block=(2, 2), orientations=9):
+    video_features = []
+
+    for frame in processed_frames:
+        hog_features, hog_image = hog(frame,
+                                      orientations=orientations,
+                                      pixels_per_cell=pixels_per_cell,
+                                      cells_per_block=cells_per_block,
+                                      block_norm='L2-Hys',
+                                      visualize=True)
+        
+        hog_features = exposure.rescale_intensity(hog_features, in_range=(0, 10))
+
+        video_features.append(hog_features)
+
+    video_features = np.concatenate(video_features, axis=0)
+
+    return video_features
