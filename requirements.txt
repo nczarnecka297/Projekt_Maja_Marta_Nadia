@@ -1,4 +1,4 @@
-json
+jsons
 opencv-python
 numpy
 scikit-learn
