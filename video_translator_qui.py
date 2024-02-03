@@ -1,3 +1,4 @@
+from joblib import load
 import cv2
 import numpy as np
 import os
@@ -46,7 +47,12 @@ def extract_features(processed_frames):
 
         if descriptors is None:
             features.append([])
+
         else:
             features.append(descriptors.flatten())
 
     return np.array(features, dtype=object)
+
+
+
+model = load('sign_language_classifier.joblib')
