@@ -1,0 +1,5 @@
+[core]
+    remote = remote-sign-language
+    autostage = true
+['remote "remote-sign-language"']
+    url = ssh://jp@153.19.8.113/storages/sign_language
