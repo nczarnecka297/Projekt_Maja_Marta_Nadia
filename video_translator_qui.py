@@ -2,9 +2,12 @@ from joblib import load
 import cv2
 import numpy as np
 import os
-from skimage.feature import hog
 from skimage import exposure
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import font as tkfont
 
+error_label = None
 def preprocessing(video_path):
     
     cap = cv2.VideoCapture(video_path)
@@ -12,8 +15,8 @@ def preprocessing(video_path):
     processed_frames = []
 
     if not cap.isOpened():
-        print("Nie udało się otworzyć pliku wideo. Sprawdź ścieżkę.")
-        exit()
+        error_label.config(text="Error: unable to open file.")
+        return []
 
     while True:
         ret, frame = cap.read()
@@ -34,6 +37,10 @@ def preprocessing(video_path):
         processed_frames.append(edged)
 
     cap.release()
+    if not processed_frames:
+        error_label.config(text="Error: unable to process video.")
+    else:
+        error_label.config(text="")
     return processed_frames
 
 def extract_features(processed_frames):
@@ -47,12 +54,49 @@ def extract_features(processed_frames):
 
         if descriptors is None:
             features.append([])
-
         else:
             features.append(descriptors.flatten())
 
-    return np.array(features, dtype=object)
+    mean_features_length = int(np.mean([len(f) for f in features]))
+    padded_features = []
+    for feature in features:
+        if len(feature) < mean_features_length:
+            padded_feature = np.pad(feature, (0, mean_features_length - len(feature)), 'constant')
+        else:
+            padded_feature = feature[:mean_features_length]
+        padded_features.append(padded_feature)
 
-
+    return np.array(padded_features, dtype=object)
 
 model = load('sign_language_classifier.joblib')
+vectorizer = load('vectorizer.joblib')
+def browse_file():
+    file_path = filedialog.askopenfilename(filetypes=[("MP4 files", "*.mp4")])
+    if file_path:
+        processed_frames = preprocessing(file_path)
+        video_features = extract_features(processed_frames)
+        video_features_flattened = np.concatenate(video_features)
+
+        features_as_string = " ".join(map(str, video_features_flattened))
+        features_transformed = vectorizer.transform([features_as_string])
+
+        translation = model.predict(features_transformed)
+        result_label.config(text=f"Translation: {translation[0]}")
+
+root = tk.Tk()
+root.title("American Sign Language Video Translator")
+root.geometry("400x200")
+
+root.configure(bg="#E6E6FA")
+font = tkfont.Font(family="Roboto", size=12)
+
+result_label = tk.Label(root, text="", font=("Arial", 12), bg="#E6E6FA")
+result_label.pack(pady=20)
+
+browse_button = tk.Button(root, text="Choose video file ('*.mp4')", font=("Arial", 14), command=browse_file, bg="#9370DB")
+browse_button.pack()
+
+error_label = tk.Label(root, text="", font=font, bg="#E6E6FA", fg="red")
+error_label.pack()
+
+root.mainloop()
