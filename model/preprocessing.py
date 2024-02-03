@@ -19,7 +19,21 @@ with open(wlasl_json_path, 'r') as file:
     wlasl_data = json.load(file)
 
 def preprocessing(video_path, bbox, frame_start, frame_end):
-    #trzeba bedzie zaktualizowac dokumentacje Maja
+   
+    """
+    Process video frames by reducing noise, enhancing contrast, and applying edge detection.
+    
+    :param video_path: Path to the video file to be processed.
+    :type video_path: str
+    :param bbox: Bounding box coordinates (x, y, width, height) for the region of interest (ROI).
+    :type bbox: tuple
+    :param frame_start: Starting frame for processing (optional).
+    :type frame_start: int
+    :param frame_end: Ending frame for processing (optional).
+    :type frame_end: int
+    :return: List of processed frames.
+    :rtype: list
+    """
 
     cap = cv2.VideoCapture(video_path)
     current_frame = 0
@@ -57,6 +71,15 @@ def preprocessing(video_path, bbox, frame_start, frame_end):
     return processed_frames
 
 def extract_features(processed_frames):
+    
+    """
+    Extract ORB (Oriented FAST and Rotated BRIEF) features from processed video frames.
+
+    :param processed_frames: List of processed video frames.
+    :type processed_frames: list
+    :return: Extracted features as a NumPy array.
+    :rtype: numpy.ndarray
+    """
 
     features = []
 
