@@ -169,6 +169,7 @@ print("Training model..")
 pipeline.fit(features_transformed, y_train)
 
 dump(pipeline, 'sign_language_classifier.joblib')
+dump(vectorizer, 'vectorizer.joblib')
 
 X_test_as_strings = [" ".join(map(str, feature)) for feature in X_test]
 X_test_transformed = vectorizer.transform(X_test_as_strings)
