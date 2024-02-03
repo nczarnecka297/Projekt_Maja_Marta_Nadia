@@ -6,10 +6,10 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Sign language translator'
-copyright = '2024, Czarnecka M., Czarnecka N., Pągielska M.'
-author = 'Czarnecka M., Czarnecka N., Pągielska M.'
-release = 'February 2024'
+project = u'Sign language translator'
+copyright = u'2024, Czarnecka M., Czarnecka N., Pągielska M.'
+author = u'Czarnecka M., Czarnecka N., Pągielska M.'
+release = u'February 2024'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
