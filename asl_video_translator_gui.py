@@ -9,6 +9,20 @@ from tkinter import font as tkfont
 
 error_label = None
 def preprocessing(video_path):
+
+    """
+    Preprocesses a video file by reducing noise and enhancing contrast.
+
+    :param str video_path: The path to the video file to be processed.
+    :return: A list of processed video frames.
+    :rtype: list[numpy.ndarray]
+
+    Note:
+        The video frames are processed using techniques such as grayscale conversion,
+        CLAHE (Contrast Limited Adaptive Histogram Equalization), Gaussian blur, median blur,
+        and Canny edge detection.
+        If an error occurs while opening or processing the video, an error message is displayed.
+    """
     
     cap = cv2.VideoCapture(video_path)
     current_frame = 0
@@ -45,6 +59,19 @@ def preprocessing(video_path):
 
 def extract_features(processed_frames):
 
+    """
+    Extracts features from a list of processed video frames.
+
+    :param list[numpy.ndarray] processed_frames: A list of processed video frames.
+    :return: Extracted features from the video frames.
+    :rtype: numpy.ndarray
+
+    Note:
+        Features are extracted using the ORB (Oriented FAST and Rotated BRIEF) algorithm,
+        and then flattened into a one-dimensional array.
+        The length of features is adjusted to the mean length of all extracted features.
+    """
+
     orb = cv2.ORB_create()
 
     features = []
@@ -70,7 +97,21 @@ def extract_features(processed_frames):
 
 model = load('sign_language_classifier.joblib')
 vectorizer = load('vectorizer.joblib')
+
 def browse_file():
+    
+    """
+    Open a file dialog to select an MP4 video file, process it, and display the translation.
+
+    When this function is called, a file dialog is opened to allow the user to select an MP4 video file.
+    The selected video file is then preprocessed, and its features are extracted.
+    The extracted features are transformed using a vectorizer, and a translation is predicted using a pre-trained model.
+    The resulting translation is displayed in the GUI.
+
+    :return: None
+    :rtype: None
+    """
+    
     file_path = filedialog.askopenfilename(filetypes=[("MP4 files", "*.mp4")])
     if file_path:
         processed_frames = preprocessing(file_path)
