@@ -1,0 +1,26 @@
+stages:
+  preprocess:
+    cmd: python preprocessing.py
+    deps:
+      - preprocessing.py
+      - ${preprocessing.data_folder}/${preprocessing.json_path}
+    outs:
+      - ${preprocessing.features_folder}
+      - ${preprocessing.labels_folder}
+  train:
+    cmd: python train_model.py
+    deps:
+      - train_model.py
+      - ${train.features_folder}
+      - ${train.labels_folder}
+    params:
+      - train.train_ratio
+      - train.n_components
+      - train.with_mean
+    outs:
+      - ${model.model_filename}
+      - ${model.vectorizer_filename}
+      - ${model.scaler_filename}
+      - ${model.svd_filename}
+    metrics:
+      - accuracy.txt
