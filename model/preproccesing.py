@@ -113,6 +113,22 @@ batch_labels = []
 batch_index = 1
 
 def save_labels(batch_labels, batch_index):
+
+    """
+    Saves a batch of labels to a file.
+
+    :param batch_labels: An array or list of labels to be saved.
+    :type batch_labels: array-like
+    :param batch_index: An index representing the batch number or identifier.
+    :type batch_index: int
+
+    This function saves the provided batch of labels to a file with a filename based on the batch_index.
+    The labels are saved as a NumPy array in a .npy file format.
+
+    :return: None
+    :rtype: None
+    """
+    
     labels_filename = os.path.join(labels_folder, f"{batch_index}_batch_labels.npy")
     np.save(labels_filename, np.array(batch_labels))
 
