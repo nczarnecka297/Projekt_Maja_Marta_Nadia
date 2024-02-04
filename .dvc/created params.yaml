@@ -1,0 +1,13 @@
+train:
+  features_folder: 'processed_features'
+  labels_folder: 'processed_labels'
+  train_ratio: 0.8
+  batch_size: 10
+  n_components: 150
+  with_mean: false
+
+model:
+  model_filename: 'sign_language_classifier.joblib'
+  vectorizer_filename: 'vectorizer.joblib'
+  scaler_filename: 'scaler.joblib'
+  svd_filename: 'svd.joblib'
