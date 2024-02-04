@@ -1,16 +1,8 @@
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.svm import SVC
-from joblib import dump, load
 import cv2
 import numpy as np
 import json
 import os
 from skimage import exposure
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.decomposition import TruncatedSVD
-from sklearn.model_selection import train_test_split
 
 data_folder = os.path.join(r'data')
 wlasl_json_path = os.path.join(data_folder, 'WLASL_v0.3.json')
@@ -111,9 +103,18 @@ features_folder = 'processed_features'
 if not os.path.exists(features_folder):
     os.makedirs(features_folder)
 
+labels_folder = 'processed_labels'
+
+if not os.path.exists(labels_folder):
+    os.makedirs(labels_folder)
+
 batch_features = []
 batch_labels = []
 batch_index = 1
+
+def save_labels(batch_labels, batch_index):
+    labels_filename = os.path.join(labels_folder, f"{batch_index}_batch_labels.npy")
+    np.save(labels_filename, np.array(batch_labels))
 
 for entry in wlasl_data:
     gloss = entry['gloss']
@@ -140,6 +141,7 @@ for entry in wlasl_data:
             print(f"Saving features to {features_filename}...")
             np.save(features_filename, np.array(batch_features))
             print(f"Saved {len(batch_features)} features.")
+            save_labels(batch_labels, batch_index)
             batch_features = []
             batch_labels = []
             batch_index += 1
@@ -147,32 +149,5 @@ for entry in wlasl_data:
 if batch_features:
     features_filename = os.path.join(features_folder, f"{batch_index}_batch_features.npy")
     np.save(features_filename, np.array(batch_features))
-
-loaded_features = []
-for filename in os.listdir(features_folder):
-    if filename.endswith("_batch_features.npy"):
-        batch_features = np.load(os.path.join(features_folder, filename), allow_pickle=True)
-        loaded_features.extend(batch_features)
-
-X_train, X_test, y_train, y_test = train_test_split(loaded_features, labels, test_size=0.2, random_state=42)
-
-features_as_strings = [" ".join(map(str, feature)) for feature in X_train]
-vectorizer = CountVectorizer()
-features_transformed = vectorizer.fit_transform(features_as_strings)
-
-explained_variance_ratio = TruncatedSVD(n_components=features_transformed.shape[1]).fit(features_transformed).explained_variance_ratio_
-n_components = np.argmax(np.cumsum(explained_variance_ratio) >= 0.95)
-
-pipeline = make_pipeline(StandardScaler(with_mean=False), PCA(n_components=n_components), SVC(kernel='rbf', class_weight='balanced'))
-
-print("Training model..")
-pipeline.fit(features_transformed, y_train)
-
-dump(pipeline, 'sign_language_classifier.joblib')
-dump(vectorizer, 'vectorizer.joblib')
-
-X_test_as_strings = [" ".join(map(str, feature)) for feature in X_test]
-X_test_transformed = vectorizer.transform(X_test_as_strings)
-test_accuracy = pipeline.score(X_test_transformed, y_test)
-
-print(f"Accuracy on test data: {test_accuracy}")
+    labels_filename = os.path.join(labels_folder, f"{batch_index}_batch_labels.npy")
+    np.save(labels_filename, np.array(batch_labels))
