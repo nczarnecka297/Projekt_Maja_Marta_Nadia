@@ -12,7 +12,7 @@ This Sign Language Translator is an innovative tool designed to break down commu
 
 ### Prerequisites
 Ensure you have the following installed:
-- Python 3.x
+- Python 3.8 or newer
 - DVC
 - Necessary Python libraries: pip install -r requirements.txt
 
