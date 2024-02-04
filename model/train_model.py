@@ -26,6 +26,24 @@ all_classes = np.array(sorted(unique_classes_set))
 
 def split_batch_features_labels(features, labels, train_ratio=0.8):
 
+    """
+    Splits a dataset of features and corresponding labels into training and testing sets.
+
+    :param features: An array or list containing the features.
+    :type features: array-like
+    :param labels: An array or list containing the corresponding labels.
+    :type labels: array-like
+    :param train_ratio: The ratio of data to include in the training set (default is 0.8).
+    :type train_ratio: float
+
+    :return: A tuple containing four arrays/lists:
+        - train_features: The features for the training set.
+        - test_features: The features for the testing set.
+        - train_labels: The labels for the training set.
+        - test_labels: The labels for the testing set.
+    :rtype: tuple
+    """
+
     num_train_samples = int(len(features) * train_ratio)
     
     indices = np.arange(len(features))
@@ -41,6 +59,34 @@ def split_batch_features_labels(features, labels, train_ratio=0.8):
     return train_features, test_features, train_labels, test_labels
 
 def process_batch(features, labels, vectorizer, scaler, svd, classifier, is_first_batch, all_classes):
+
+     """
+    Processes a batch of training data and updates the classifier using incremental learning.
+
+    :param features: The raw feature array for the current batch.
+    :type features: array-like
+    :param labels: The label array for the current batch.
+    :type labels: array-like
+    :param vectorizer: An instance of CountVectorizer for text vectorization.
+    :type vectorizer: CountVectorizer
+    :param scaler: An instance of StandardScaler for feature scaling.
+    :type scaler: StandardScaler
+    :param svd: An instance of TruncatedSVD for dimensionality reduction.
+    :type svd: TruncatedSVD
+    :param classifier: An instance of SGDClassifier for incremental learning.
+    :type classifier: SGDClassifier
+    :param is_first_batch: Flag indicating if this is the first batch of data, triggering fitting of transformers.
+    :type is_first_batch: bool
+    :param all_classes: An array of all unique class labels in the dataset.
+    :type all_classes: array-like
+
+    Each feature in the features array is first converted to a string and then transformed using
+    the provided vectorizer, scaler, and SVD transformer. If this is the first batch, the
+    transformers will be fit to the data; otherwise, they will be applied using previously learned parameters.
+    The classifier is then updated using partial_fit with the transformed features and corresponding labels.
+
+    :returns: None
+    """
     
     features_as_strings = [" ".join(map(str, feature)) for feature in features]
     
@@ -56,6 +102,22 @@ def process_batch(features, labels, vectorizer, scaler, svd, classifier, is_firs
     classifier.partial_fit(X_reduced, labels, classes=all_classes)
     
 def transform_features(features, vectorizer, scaler, svd):
+
+    """
+    Transforms a batch of features using a series of transformers.
+
+    :param features: An array or list of features to be transformed.
+    :type features: array-like
+    :param vectorizer: An instance of CountVectorizer for text vectorization.
+    :type vectorizer: CountVectorizer
+    :param scaler: An instance of StandardScaler for feature scaling.
+    :type scaler: StandardScaler
+    :param svd: An instance of TruncatedSVD for dimensionality reduction.
+    :type svd: TruncatedSVD
+
+    :return: The transformed features after applying vectorization, scaling, and dimensionality reduction.
+    :rtype: array-like
+    """
 
     features_as_strings = [" ".join(map(str, feature)) for feature in features]
     features_transformed = vectorizer.transform(features_as_strings)
