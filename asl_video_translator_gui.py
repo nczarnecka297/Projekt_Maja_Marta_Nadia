@@ -97,6 +97,8 @@ def extract_features(processed_frames):
 
 model = load('sign_language_classifier.joblib')
 vectorizer = load('vectorizer.joblib')
+scaler = load('scaler.joblib')
+svd = load('svd.joblib')
 
 def browse_file():
     
@@ -114,28 +116,63 @@ def browse_file():
     
     file_path = filedialog.askopenfilename(filetypes=[("MP4 files", "*.mp4")])
     if file_path:
+        video_name = os.path.basename(file_path)
+        selected_video_label.config(text=f"Selected video: {video_name}", fg="blue")
+        
+        update_status("Translating...", "blue")
+
         processed_frames = preprocessing(file_path)
         video_features = extract_features(processed_frames)
         video_features_flattened = np.concatenate(video_features)
 
-        features_as_string = " ".join(map(str, video_features_flattened))
-        features_transformed = vectorizer.transform([features_as_string])
+        features_as_strings = [" ".join(map(str, video_features_flattened))]
+        features_transformed = vectorizer.transform(features_as_strings)
+        
+        X_scaled = scaler.transform(features_transformed)
+        X_reduced = svd.transform(X_scaled)
 
-        translation = model.predict(features_transformed)
-        result_label.config(text=f"Translation: {translation[0]}")
+        translation = model.predict(X_reduced)
+        update_status(f"Translation: {translation[0]}", "purple")
+        browse_button.config(state="normal")
+        
+def finish_translation(translation):
+    """
+    Finalizes the translation process by updating the status label with the translation result and re-enabling the browse button.
 
+    :param translation: The translated text to be displayed.
+    :type translation: str
+    """
+    update_status(f"Translation: {translation}", "purple")
+    browse_button.config(state="normal")
+
+def update_status(message, color="red"):
+    """
+    Updates the status label with a given message and changes its color. It also clears any previous error messages.
+
+    :param message: The message to be displayed on the status label.
+    :type message: str
+    :param color: The color of the text to be displayed, defaults to "red".
+    :type color: str
+    """
+    status_label.config(text=message, fg=color)
+    error_label.config(text='')
+    root.update_idletasks()
+    
 root = tk.Tk()
 root.title("American Sign Language Video Translator")
-root.geometry("400x200")
+root.geometry("500x250")
 
 root.configure(bg="#E6E6FA")
-font = tkfont.Font(family="Roboto", size=12)
+font = tkfont.Font(family="Roboto", size=13)
 
-result_label = tk.Label(root, text="", font=("Arial", 12), bg="#E6E6FA")
-result_label.pack(pady=20)
+selected_video_label = tk.Label(root, text="No video selected", font=font, bg="#E6E6FA", fg="blue")
+selected_video_label.pack(pady=(10, 0))
 
-browse_button = tk.Button(root, text="Choose video file ('*.mp4')", font=("Arial", 14), command=browse_file, bg="#9370DB")
-browse_button.pack()
+browse_button = tk.Button(root, text="Choose video file ('*.mp4')", font=("Roboto", 14), command=lambda: [browse_button.config(state="disabled"), browse_file()], bg="#9370DB")
+browse_button.pack(pady=(10, 5))
+
+status_label = tk.Label(root, text="", font=font, bg="#E6E6FA")
+status_label.pack(pady=(5, 10))
 
 error_label = tk.Label(root, text="", font=font, bg="#E6E6FA", fg="red")
 error_label.pack()
