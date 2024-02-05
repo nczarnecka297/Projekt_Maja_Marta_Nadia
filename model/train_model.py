@@ -12,7 +12,7 @@ labels_folder = 'processed_labels'
 
 vectorizer = CountVectorizer()
 scaler = StandardScaler(with_mean=False)
-svd = TruncatedSVD(n_components=150)
+svd = TruncatedSVD(n_components=200)
 classifier = SGDClassifier()
 
 unique_classes_set = set()
@@ -60,7 +60,7 @@ def split_batch_features_labels(features, labels, train_ratio=0.8):
 
 def process_batch(features, labels, vectorizer, scaler, svd, classifier, is_first_batch, all_classes):
 
-     """
+    """
     Processes a batch of training data and updates the classifier using incremental learning.
 
     :param features: The raw feature array for the current batch.
@@ -87,7 +87,6 @@ def process_batch(features, labels, vectorizer, scaler, svd, classifier, is_firs
 
     :returns: None
     """
-    
     features_as_strings = [" ".join(map(str, feature)) for feature in features]
     
     if is_first_batch:
@@ -129,29 +128,40 @@ def transform_features(features, vectorizer, scaler, svd):
 total_accuracy = 0
 batches_processed = 0
 is_first_batch = True
+batch_size = 30
 
-for batch_index, features_file in enumerate(sorted(os.listdir(features_folder))):
-    
-    if features_file.endswith("_batch_features.npy"):
+all_features_files = sorted([f for f in os.listdir(features_folder) if f.endswith("_batch_features.npy")])
+for batch_index in range(0, len(all_features_files), batch_size):
+    combined_train_features = []
+    combined_test_features = []
+    combined_train_labels = []
+    combined_test_labels = []
+    print(f'Loading batches {batch_index} to {batch_index + batch_size - 1}...')
+
+    for i in range(batch_index, min(batch_index + batch_size, len(all_features_files))):
+        features_file = all_features_files[i]
         batch_features = np.load(os.path.join(features_folder, features_file), allow_pickle=True)
         labels_file = features_file.replace('features', 'labels')
         batch_labels = np.load(os.path.join(labels_folder, labels_file), allow_pickle=True)
-        
-        print(f'Splitting {batch_index} batch into train and test...')
-        train_features, test_features, train_labels, test_labels = split_batch_features_labels(batch_features, batch_labels)
-        
-        print(f'Training {batch_index} batch...')
-        process_batch(train_features, train_labels, vectorizer, scaler, svd, classifier, is_first_batch, all_classes)
-        is_first_batch = False
-        
-        print(f'Testing and predicting {batch_index} batch...')
-        test_features_transformed = transform_features(test_features, vectorizer, scaler, svd)
-        predictions = classifier.predict(test_features_transformed)
-        accuracy = accuracy_score(test_labels, predictions)
-        print(f"Batch {batch_index} Accuracy: {accuracy:.4f}")
 
-        total_accuracy += accuracy
-        batches_processed += 1
+        train_features, test_features, train_labels, test_labels = split_batch_features_labels(batch_features, batch_labels)
+        combined_train_features.extend(train_features)
+        combined_test_features.extend(test_features)
+        combined_train_labels.extend(train_labels)
+        combined_test_labels.extend(test_labels)
+
+    print(f'Training batches {batch_index} to {batch_index + batch_size - 1}...')
+    process_batch(combined_train_features, combined_train_labels, vectorizer, scaler, svd, classifier, is_first_batch,
+                  all_classes)
+    is_first_batch = False
+
+    print(f'Testing and predicting batches {batch_index} to {batch_index + batch_size - 1}...')
+    test_features_transformed = transform_features(combined_test_features, vectorizer, scaler, svd)
+    predictions = classifier.predict(test_features_transformed)
+    accuracy = accuracy_score(combined_test_labels, predictions)
+    print(f"Batches {batch_index} to {batch_index + batch_size - 1} Accuracy: {accuracy:.4f}")
+    total_accuracy += accuracy
+    batches_processed += 1
 
 average_accuracy = total_accuracy / batches_processed
 print(f"Average accuracy across all batches: {average_accuracy:.4f}")
